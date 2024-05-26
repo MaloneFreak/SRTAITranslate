@@ -1,7 +1,7 @@
 # SRTTranslate
 SRT Subtitle Translation Project, developed by: https://github.com/Kattiell e https://github.com/MaloneFreak
 
-These are the requirements to use the software:
+<h3> These are the requirements to use the software:<h3/>
 <p>
 pip install requests srt
 	</p>
@@ -20,5 +20,6 @@ pip install protobuf
   <p>
 pip install sentencepiece
  </p>
-If you have any questions feel free to ask or if you want to collaborate and expand the project you're welcome
+
+<h3>If you have any questions feel free to ask or if you want to collaborate and expand the project you're welcome<h3/>
 
