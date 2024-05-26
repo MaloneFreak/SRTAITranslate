@@ -21,7 +21,7 @@ pip install protobuf
 pip install sentencepiece
  </p>
 
-<h3>If you have any questions feel free to ask or if you want to collaborate and expand the project you're welcome<h3/>
+<h3>If you have any questions, feel free to ask, or if you want to collaborate and expand on the project, you're welcome to do so<h3/>
 
 <blockquote> <em> Here is the software interface. You just click on 'upload,' then select the original language and the desired language. After that, you click 'translate,' and it's good to go. </em> </blockquote>
 
