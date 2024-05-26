@@ -1,5 +1,5 @@
 # SRTTranslate
-SRT Subtitle Translation Project, developed by: https://github.com/Kattiell and https://github.com/MaloneFreak
+SRT Subtitle Translation Project using AI Model, developed by: https://github.com/Kattiell and https://github.com/MaloneFreak
 
 <h3 display="inline"> These are the requirements to use the software:<h3/>
 <p>
