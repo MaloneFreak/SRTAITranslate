@@ -1,8 +1,9 @@
 # SRTTranslate
 SRT Subtitle Translation Project, developed by: https://github.com/Kattiell e https://github.com/MaloneFreak
+<p> </p>
 <h3 display="inline">
 These are the requirements to use the software:
-	<p>
+<p>
 pip install requests srt
 	</p>
 	<p>
