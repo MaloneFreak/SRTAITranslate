@@ -20,6 +20,9 @@ pip install protobuf
   <p>
 pip install sentencepiece
  </p>
+  <p>
+The token to use the AI Model can be generated here: https://huggingface.co/
+ </p>
 
 <h3>If you have any questions, feel free to ask, or if you want to collaborate and expand on the project, you're welcome to do so<h3/>
 
