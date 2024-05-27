@@ -5,9 +5,7 @@ import srt
 import os
 from huggingface_hub import login, HfApi
 
-token = ""  # Substitua pelo seu token
-login(token)
-
+# Função para obter o tradutor correto com base nos idiomas
 def get_translator(src_lang, tgt_lang):
     try:
         api = HfApi()
@@ -41,7 +39,8 @@ def get_translator(src_lang, tgt_lang):
     except Exception as e:
         messagebox.showerror("Erro", f"Erro ao carregar o modelo: {e}")
         return None, None
-    
+
+# Função para traduzir texto usando o modelo carregado
 def translate_text(text, translator, tokenizer):
     try:
         translated = translator(text)
@@ -51,6 +50,7 @@ def translate_text(text, translator, tokenizer):
         messagebox.showerror("Erro", f"Erro na tradução: {e}")
         return text
 
+# Função para ler e traduzir um arquivo SRT
 def translate_srt(input_file, src_lang, tgt_lang, progress_callback):
     translator, tokenizer = get_translator(src_lang, tgt_lang)
     if translator is None or tokenizer is None:
@@ -86,10 +86,17 @@ def start_translation():
 
     src_language = src_language_entry.get()
     tgt_language = tgt_language_entry.get()
+    token = token_entry.get()
     if not src_language or not tgt_language:
         messagebox.showerror("Erro", "Por favor, insira os idiomas de origem e destino.")
         return
 
+    if not token:
+        messagebox.showerror("Erro", "Por favor, insira o token API.")
+        return
+
+    login(token)
+    
     progress_bar['value'] = 0
     progress_bar.update()
 
@@ -107,7 +114,7 @@ def update_progress(current, total):
 
 root = tk.Tk()
 root.title("Tradutor de Arquivos SRT")
-root.geometry("400x300")
+root.geometry("400x400")
 
 upload_button = tk.Button(root, text="Upload", command=upload_file)
 upload_button.pack(pady=10)
@@ -126,6 +133,12 @@ tgt_language_label.pack(pady=5)
 
 tgt_language_entry = tk.Entry(root)
 tgt_language_entry.pack(pady=5)
+
+token_label = tk.Label(root, text="Token API Hugging Face")
+token_label.pack(pady=5)
+
+token_entry = tk.Entry(root, show="*")
+token_entry.pack(pady=5)
 
 translate_button = tk.Button(root, text="Traduzir", command=start_translation)
 translate_button.pack(pady=20)
