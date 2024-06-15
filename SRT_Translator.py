@@ -4,6 +4,26 @@ from transformers import MarianMTModel, MarianTokenizer
 import srt
 import os
 from huggingface_hub import login, HfApi
+import configparser
+
+# Caminho do arquivo de configuração
+config_file = os.path.join(os.path.expanduser('~'), 'srt_translator_config.ini')
+
+# Função para carregar o token do arquivo de configuração
+def load_token():
+    config = configparser.ConfigParser()
+    if os.path.exists(config_file):
+        config.read(config_file)
+        if 'HuggingFace' in config and 'token' in config['HuggingFace']:
+            return config['HuggingFace']['token']
+    return ''
+
+# Função para salvar o token no arquivo de configuração
+def save_token(token):
+    config = configparser.ConfigParser()
+    config['HuggingFace'] = {'token': token}
+    with open(config_file, 'w') as configfile:
+        config.write(configfile)
 
 # Função para obter o tradutor correto com base nos idiomas
 def get_translator(src_lang, tgt_lang):
@@ -95,6 +115,7 @@ def start_translation():
         messagebox.showerror("Erro", "Por favor, insira o token API.")
         return
 
+    save_token(token)
     login(token)
     
     progress_bar['value'] = 0
@@ -113,22 +134,22 @@ def update_progress(current, total):
     progress_bar.update()
 
 root = tk.Tk()
-root.title("Tradutor de Arquivos SRT")
+root.title("SRT AI Translator")
 root.geometry("400x400")
 
 upload_button = tk.Button(root, text="Upload", command=upload_file)
 upload_button.pack(pady=10)
 
-file_label = tk.Label(root, text="Nenhum arquivo selecionado")
+file_label = tk.Label(root, text="None file selected")
 file_label.pack(pady=5)
 
-src_language_label = tk.Label(root, text="Idioma de Origem (ex: en)")
+src_language_label = tk.Label(root, text="Source Language (ex: en)")
 src_language_label.pack(pady=5)
 
 src_language_entry = tk.Entry(root)
 src_language_entry.pack(pady=5)
 
-tgt_language_label = tk.Label(root, text="Idioma de Destino (ex: pt)")
+tgt_language_label = tk.Label(root, text="Target Language (ex: pt)")
 tgt_language_label.pack(pady=5)
 
 tgt_language_entry = tk.Entry(root)
@@ -140,7 +161,12 @@ token_label.pack(pady=5)
 token_entry = tk.Entry(root, show="*")
 token_entry.pack(pady=5)
 
-translate_button = tk.Button(root, text="Traduzir", command=start_translation)
+# Carregar o token salvo, se existir
+saved_token = load_token()
+if saved_token:
+    token_entry.insert(0, saved_token)
+
+translate_button = tk.Button(root, text="Translate", command=start_translation)
 translate_button.pack(pady=20)
 
 progress_bar = ttk.Progressbar(root, orient="horizontal", length=300, mode="determinate")
