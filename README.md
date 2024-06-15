@@ -30,5 +30,4 @@ The token to use the AI Model can be generated here: https://huggingface.co/
 
 ![image](https://github.com/MaloneFreak/SRTAITranslate/assets/21204817/1f572b7e-0949-471c-89ac-a03f9c1f6bf9)
 
-)
 
