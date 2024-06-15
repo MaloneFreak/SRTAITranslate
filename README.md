@@ -28,6 +28,6 @@ The token to use the AI Model can be generated here: https://huggingface.co/
 
 <blockquote> <em> Here is the software interface. You just click on 'upload,' then select the original language and the desired language. After that, you click 'translate,' and it's good to go. </em> </blockquote>
 
-![image](![image](https://github.com/MaloneFreak/SRTAITranslate/assets/21204817/4e8584ed-0516-4864-97c7-bb7d8742e3d4)
+![image](![image](https://github.com/MaloneFreak/SRTAITranslate/assets/21204817/4e8584ed-0516-4864-97c7-bb7d8742e3d4 )
 )
 
