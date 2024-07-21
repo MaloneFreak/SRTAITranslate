@@ -98,6 +98,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 Thank you for using SRT AI Translator!
-```
-
-Feel free to make any adjustments to better fit your project's needs or to add more specific details.
