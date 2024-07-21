@@ -1,5 +1,3 @@
-Sure! Here is the README in English:
-
 ```markdown
 # SRT AI Translator
 
