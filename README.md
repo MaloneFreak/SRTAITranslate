@@ -1,4 +1,3 @@
-```markdown
 # SRT AI Translator
 
 SRT AI Translator is an automatic subtitle translation tool that uses advanced translation models from Hugging Face. This tool allows you to translate subtitles from movies and videos into different languages efficiently and with ease.
