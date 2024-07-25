@@ -92,8 +92,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-- **Author**: [MaloneFreak](https://github.com/MaloneFreak), [Kattiel](https://github.com/Kattiell)
-- **Email**: [malonefreak@yandex.ru](mailto:malonefreak@yandex.ru), [gabrielcaetanopf.contato@gmail.com](mailto:gabrielcaetanopf.contato@gmail.com)
+- **Author**: [MaloneFreak](https://github.com/MaloneFreak)
+- **Email**: [malonefreak@yandex.ru](mailto:malonefreak@yandex.ru)
 
 ---
 
