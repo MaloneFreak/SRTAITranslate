@@ -31,7 +31,7 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 2. **Install Dependencies**
    Run the installation script to install all required dependencies:
    ```bash
-   python install_requirements.py
+   python Module Installation.py
    ```
    This script will install PyTorch and other necessary libraries.
 
@@ -44,7 +44,7 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 1. **Start the Application**
    Run the main script to launch the graphical user interface (GUI):
    ```bash
-   python srt_translator.py
+   python SRTAI_Translator.py
    ```
 
 2. **Upload the SRT File**
@@ -64,7 +64,7 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 ## Known Issues
 
 - **CUDA Compatibility**: Ensure that you have the correct CUDA version installed for your GPU. The installer script uses CUDA 12.4 by default.
-- **Installation Errors**: If you encounter issues during installation, try running the `install_requirements.py` script with administrator privileges or in a virtual environment.
+- **Installation Errors**: If you encounter issues during installation, try running the `Module Installation.py` script with administrator privileges or in a virtual environment.
 
 ## Contributing
 
