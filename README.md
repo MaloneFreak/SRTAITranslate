@@ -94,4 +94,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Thank you for using SRT AI Translator! We hope this tool enhances your subtitle translation experience.****
+**Thank you for using SRT AI Translator! We hope this tool enhances your subtitle translation experience.**
