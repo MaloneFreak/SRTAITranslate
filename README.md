@@ -34,7 +34,7 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/YourUsername/SRTAITranslator.git
+   git clone https://github.com/MaloneFreak/SRTAITranslator.git
    cd SRTAITranslator
    ```
 
