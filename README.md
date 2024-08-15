@@ -51,7 +51,7 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 ## Usage
 
 1. **Start the Application**
-   Run the main script to launch the graphical user interface (GUI):
+   Run the main script to launch the graphical user interface (GUI) Or run the .EXE:
    ```bash
    python SRTAI_Translator.py
    ```
