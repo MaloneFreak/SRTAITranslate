@@ -40,7 +40,7 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 2. **Install Dependencies**
    Run the installation script to install all required dependencies:
    ```bash
-   pip install -r requirements.txt
+   python Module Installation.py
    ```
 
 3. **Obtain a Hugging Face Token**
@@ -52,7 +52,7 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 1. **Start the Application**
    Run the main script to launch the graphical user interface (GUI):
    ```bash
-   python srt_translator_app.py
+   python SRTAI_Translator.py
    ```
 
 2. **Upload the SRT File**
