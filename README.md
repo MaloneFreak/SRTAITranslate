@@ -1,6 +1,17 @@
 # SRT AI Translator
 
-SRT AI Translator is an automatic subtitle translation tool that leverages the advanced translation model from Hugging Face (facebook/nllb-200-3.3B). This tool enables efficient and easy translation of subtitles from movies and videos into various languages.
+SRT AI Translator is an advanced automatic subtitle translation tool that leverages the powerful translation model from Hugging Face (facebook/nllb-200-3.3B). This application enables efficient and easy translation of subtitles from movies and videos into various languages, with an improved user interface and enhanced functionality.
+
+## Features
+
+- User-friendly graphical interface
+- Support for multiple language pairs
+- Batch translation of SRT files
+- Progress tracking with a visual progress bar
+- Secure token storage using keyring
+- Improved error handling and input validation
+- Option to cancel ongoing translations
+- Token visibility toggle for enhanced security
 
 ## Requirements
 
@@ -10,8 +21,6 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 - **Python Libraries**:
   - `transformers`
   - `torch`
-  - `torchvision`
-  - `torchaudio`
   - `srt`
   - `huggingface_hub`
   - `keyring`
@@ -31,9 +40,8 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 2. **Install Dependencies**
    Run the installation script to install all required dependencies:
    ```bash
-   python Module Installation.py
+   pip install -r requirements.txt
    ```
-   This script will install PyTorch and other necessary libraries.
 
 3. **Obtain a Hugging Face Token**
    - Visit [Hugging Face](https://huggingface.co/) and create an account if you don't have one.
@@ -44,7 +52,7 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 1. **Start the Application**
    Run the main script to launch the graphical user interface (GUI):
    ```bash
-   python SRTAI_Translator.py
+   python srt_translator_app.py
    ```
 
 2. **Upload the SRT File**
@@ -53,22 +61,25 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
 3. **Enter Required Information**
    - **Source Language**: Enter the source language code (e.g., `eng_Latn`).
    - **Target Language**: Enter the target language code (e.g., `por_Latn`).
-   - **Hugging Face API Token**: Enter your Hugging Face token.
+   - **Hugging Face API Token**: Enter your Hugging Face token. You can toggle visibility for security.
 
 4. **Translate the File**
-   Click the "Start Translation" button and wait while the software translates the SRT file content. Progress will be shown on the progress bar.
+   Click the "Translate" button to start the translation process. The progress will be shown on the progress bar.
 
-5. **Retrieve the Translated File**
-   The translated file will be saved in the `Downloads` folder with the prefix `translated_`.
+5. **Cancel Translation**
+   If needed, you can cancel the ongoing translation process by clicking the "Cancel" button.
+
+6. **Retrieve the Translated File**
+   Upon successful translation, a message will appear with the location of the translated file. The translated file will be saved in the `Downloads` folder with the prefix `translated_`.
 
 ## Known Issues
 
-- **CUDA Compatibility**: Ensure that you have the correct CUDA version installed for your GPU. The installer script uses CUDA 12.4 by default.
-- **Installation Errors**: If you encounter issues during installation, try running the `Module Installation.py` script with administrator privileges or in a virtual environment.
+- **CUDA Compatibility**: Ensure that you have the correct CUDA version installed for your GPU if you want to use GPU acceleration.
+- **Large File Handling**: Very large SRT files may require significant processing time and memory.
 
 ## Contributing
 
-If you wish to contribute to the development of SRT AI Translator, feel free to open issues, submit pull requests, or provide feedback.
+If you wish to contribute to the development of SRT AI Translator, feel free to open issues, submit pull requests, or provide feedback. We welcome contributions to improve the tool's functionality and user experience.
 
 ## License
 
@@ -82,4 +93,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Thank you for using SRT AI Translator!
+Thank you for using SRT AI Translator! We hope this tool enhances your subtitle translation experience.****
