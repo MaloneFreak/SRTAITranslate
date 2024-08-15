@@ -24,6 +24,7 @@ Before using SRT AI Translator, ensure that you meet the following requirements:
   - `srt`
   - `huggingface_hub`
   - `keyring`
+  - `accelerate`
   - `tkinter` (usually included with Python)
 - **Translation Model**: The "facebook/nllb-200-3.3B" model from Hugging Face will be downloaded automatically.
 - **CUDA**: For NVIDIA GPUs (optional, recommended for faster translation).
