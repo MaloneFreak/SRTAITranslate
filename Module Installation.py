@@ -2,14 +2,14 @@ import subprocess
 import sys
 import os
 
-
 def install_requirements():
     requirements = [
         ("torch", "torchvision", "torchaudio"),
         "transformers",
+        "accelerate",  
         "srt",
         "huggingface_hub",
-        "keyring"
+        "keyring",
     ]
 
     python = sys.executable
@@ -17,7 +17,12 @@ def install_requirements():
 
     print("Installing requirements for SRT Translator...")
 
-    # Install PyTorch separately
+    print("Upgrading pip...")
+    try:
+        subprocess.check_call(pip + ["install", "--upgrade", "pip"])
+    except subprocess.CalledProcessError:
+        print("Failed to upgrade pip. Continuing with installation...")
+
     print("Installing PyTorch...")
     try:
         subprocess.check_call(pip + ["install", "--pre", "torch", "torchvision", "torchaudio", "--index-url",
@@ -26,7 +31,6 @@ def install_requirements():
         print("Failed to install PyTorch. Please install it manually.")
         return False
 
-    # Install other requirements
     for req in requirements[1:]:  # Skip PyTorch as we've already installed it
         print(f"Installing {req}...")
         try:
@@ -37,7 +41,6 @@ def install_requirements():
 
     print("All requirements installed successfully!")
     return True
-
 
 if __name__ == "__main__":
     if install_requirements():
