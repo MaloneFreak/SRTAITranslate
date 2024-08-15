@@ -1,256 +1,249 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 import torch
 import srt
 import os
-from huggingface_hub import login, HfApi, cached_download
+from huggingface_hub import login
 import logging
-import keyring
-import re
+import json
 from threading import Thread
 
 logging.basicConfig(level=logging.INFO, filename='srt_translator.log', filemode='w')
 
-translation_cancelled = False
 
-class TokenInvalidoError(Exception):
-    pass
+class SRTTranslatorApp:
+    def __init__(self, master):
+        self.master = master
+        self.translation_cancelled = False
+        self.translation_thread = None
 
-class ErroDeTraducao(Exception):
-    pass
+        master.title("SRT AI Translator")
+        master.geometry("500x500")
+        master.configure(bg="#f0f0f0")
 
-def clean_text(text):
-    text = re.sub(r'\s+', ' ', text)
-    text = re.sub(r'[^\w\s]', '', text)
-    return text
+        self.style = ttk.Style()
+        self.style.configure('TButton', font=('Arial', 10), padding=6, relief='flat', background="#ffffff",
+                             foreground="#000000")
+        self.style.configure('TLabel', font=('Arial', 10), background="#f0f0f0")
+        self.style.configure('TProgressbar', thickness=20)
+        self.style.map('TButton', background=[('active', '#f0f0f0')], foreground=[('active', '#000000')])
 
-def save_token(token):
-    keyring.set_password('huggingface', 'user', token)
+        self.create_widgets()
+        self.load_saved_settings()
 
-def load_token():
-    return keyring.get_password('huggingface', 'user')
+    def create_widgets(self):
+        self.upload_button = ttk.Button(self.master, text="Upload SRT File", command=self.upload_file)
+        self.upload_button.grid(row=0, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
 
-def validate_token(token):
-    api = HfApi()
-    try:
-        api.whoami(token)
-        return True
-    except Exception:
-        return False
+        self.file_label = ttk.Label(self.master, text="No file selected")
+        self.file_label.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
 
-def get_translator(src_lang, tgt_lang):
-    try:
-        model_name = "facebook/nllb-200-3.3B"
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        self.src_language_label = ttk.Label(self.master, text="Source Language (e.g., eng_Latn):")
+        self.src_language_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
 
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        model.to(device)
+        self.src_language_entry = ttk.Entry(self.master)
+        self.src_language_entry.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
 
-        def translator(texts):
-            try:
-                texts = [clean_text(text) for text in texts]
-                tokenizer.src_lang = src_lang
-                encoded_texts = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
-                if device != 'cpu':
-                    encoded_texts = {k: v.to(device) for k, v in encoded_texts.items()}
-                generated_tokens = model.generate(
-                    **encoded_texts,
-                    forced_bos_token_id=tokenizer.convert_tokens_to_ids(tgt_lang),
-                    max_length=512,
-                    num_beams=4,
-                    no_repeat_ngram_size=2
-                )
-                return generated_tokens
-            except Exception as e:
-                logging.error("Error generating tokens: ", exc_info=True)
-                return None
+        self.tgt_language_label = ttk.Label(self.master, text="Target Language (e.g., por_Latn):")
+        self.tgt_language_label.grid(row=3, column=0, padx=10, pady=10, sticky="w")
 
-        return translator, tokenizer, model, device
-    except Exception as e:
-        logging.error("Error loading the model: ", exc_info=True)
-        return None, None, None, None
+        self.tgt_language_entry = ttk.Entry(self.master)
+        self.tgt_language_entry.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
 
-def translate_texts(texts, translator, tokenizer, device):
-    try:
-        logging.info(f"Translating batch of size {len(texts)}")
-        translated = translator(texts)
-        if translated is None:
-            raise ErroDeTraducao("Translation failed")
-        result = tokenizer.batch_decode(translated, skip_special_tokens=True)
-        return result
-    except Exception as e:
-        logging.error("Error in translation: ", exc_info=True)
-        return texts
+        self.token_label = ttk.Label(self.master, text="Hugging Face Token:")
+        self.token_label.grid(row=4, column=0, padx=10, pady=10, sticky="w")
 
-def chunks(lst, n):
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        self.token_entry = ttk.Entry(self.master, show="*")
+        self.token_entry.grid(row=4, column=1, padx=10, pady=10, sticky="ew")
 
-def translate_srt(input_file, src_lang, tgt_lang, progress_callback):
-    global translation_cancelled
-    translation_cancelled = False
-    translator, tokenizer, model, device = get_translator(src_lang, tgt_lang)
-    if translator is None or tokenizer is None or model is None or device is None:
-        return None
+        self.show_hide_button = ttk.Button(self.master, text="Show", command=self.toggle_token_visibility)
+        self.show_hide_button.grid(row=4, column=2, padx=10, pady=10)
 
-    try:
-        with open(input_file, 'r', encoding='utf-8') as f:
-            subs = list(srt.parse(f.read()))
+        self.translate_button = ttk.Button(self.master, text="Translate", command=self.start_translation)
+        self.translate_button.grid(row=5, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
 
-        total_subs = len(subs)
-        batch_size = 5
-        translated_subs = []
+        self.cancel_button = ttk.Button(self.master, text="Cancel", command=self.cancel_translation, state=tk.DISABLED)
+        self.cancel_button.grid(row=6, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
 
-        for i, batch in enumerate(chunks(subs, batch_size)):
-            if translation_cancelled:
-                logging.info("Translation cancelled")
-                return None
-            texts = [sub.content for sub in batch]
-            translated_texts = translate_texts(texts, translator, tokenizer, device)
-            for sub, translated_text in zip(batch, translated_texts):
-                sub.content = translated_text
-                translated_subs.append(sub)
-            progress_callback((i + 1) * batch_size, total_subs)
-            logging.info(f"Processed batch {i + 1}/{(total_subs + batch_size - 1) // batch_size}")
+        self.progress_bar = ttk.Progressbar(self.master, mode='determinate')
+        self.progress_bar.grid(row=7, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
 
-        output_file = os.path.join(os.path.expanduser('~'), 'Downloads', f"translated_{os.path.basename(input_file)}")
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(srt.compose(translated_subs))
-        return output_file
-    except Exception as e:
-        logging.error("Error processing SRT file: ", exc_info=True)
-        return None
+        self.status_label = ttk.Label(self.master, text="")
+        self.status_label.grid(row=8, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
 
-def upload_file():
-    file_path = filedialog.askopenfilename(filetypes=[("SRT files", "*.srt")])
-    if file_path:
-        file_label.config(text=os.path.basename(file_path))
-        file_label.file_path = file_path
+    def load_saved_settings(self):
+        settings = self.load_settings()
+        if settings:
+            self.src_language_entry.insert(0, settings.get('src_lang', ''))
+            self.tgt_language_entry.insert(0, settings.get('tgt_lang', ''))
+            self.token_entry.insert(0, settings.get('token', ''))
 
-def process_translation():
-    if not hasattr(file_label, 'file_path'):
-        messagebox.showerror("Error", "Please select an SRT file.")
-        return
+    def upload_file(self):
+        file_path = filedialog.askopenfilename(filetypes=[("SRT files", "*.srt")])
+        if file_path:
+            self.file_label.config(text=os.path.basename(file_path))
+            self.file_label.file_path = file_path
 
-    src_language = src_language_entry.get()
-    tgt_language = tgt_language_entry.get()
-    token = token_entry.get()
-    if not src_language or not tgt_language:
-        messagebox.showerror("Error", "Please enter source and target languages.")
-        return
+    def toggle_token_visibility(self):
+        if self.token_entry.cget('show') == '*':
+            self.token_entry.config(show='')
+            self.show_hide_button.config(text='Hide')
+        else:
+            self.token_entry.config(show='*')
+            self.show_hide_button.config(text='Show')
 
-    if not token:
-        messagebox.showerror("Error", "Please enter the Hugging Face API token.")
-        return
+    def start_translation(self):
+        if not hasattr(self.file_label, 'file_path'):
+            messagebox.showerror("Error", "Please select an SRT file.")
+            return
 
-    if not validate_token(token):
-        raise TokenInvalidoError("Invalid or expired token")
+        src_language = self.src_language_entry.get()
+        tgt_language = self.tgt_language_entry.get()
+        token = self.token_entry.get()
+        if not src_language or not tgt_language:
+            messagebox.showerror("Error", "Please enter source and target languages.")
+            return
 
-    save_token(token)
-    login(token)
+        if not token:
+            messagebox.showerror("Error", "Please enter the Hugging Face API token.")
+            return
 
-    progress_bar['value'] = 0
-    progress_bar.update()
+        if not self.validate_token(token):
+            messagebox.showerror("Error", "Invalid token")
+            return
 
-    def run_translation():
+        self.save_settings(src_language, tgt_language, token)
+        login(token)
+
+        self.progress_bar['value'] = 0
+        self.progress_bar.update()
+        self.translate_button.config(state=tk.DISABLED)
+        self.cancel_button.config(state=tk.NORMAL)
+        self.status_label.config(text="Translation in progress...")
+
+        self.translation_cancelled = False
+        self.translation_thread = Thread(target=self.run_translation, args=(src_language, tgt_language))
+        self.translation_thread.start()
+
+    def run_translation(self, src_language, tgt_language):
         try:
-            output_file = translate_srt(file_label.file_path, src_language, tgt_language, update_progress)
+            output_file = self.translate_srt(self.file_label.file_path, src_language, tgt_language,
+                                             self.update_progress)
             if output_file:
-                root.after(0, lambda: messagebox.showinfo("Success", f"Translated file saved at: {output_file}"))
+                self.master.after(0, lambda: messagebox.showinfo("Success", f"Translated file saved at: {output_file}"))
+                self.master.after(0, lambda: self.status_label.config(text="Translation completed successfully."))
+            else:
+                self.master.after(0, lambda: self.status_label.config(text="Translation cancelled or failed."))
         except Exception as e:
-            root.after(0, lambda: messagebox.showerror("Error", f"Error translating the file: {e}"))
+            self.master.after(0, lambda: messagebox.showerror("Error", f"Error translating the file: {str(e)}"))
+            self.master.after(0, lambda: self.status_label.config(text="Translation failed."))
+        finally:
+            self.master.after(0, self.reset_ui)
 
-    thread = Thread(target=run_translation)
-    thread.start()
+    def update_progress(self, current, total):
+        progress = (current / total) * 100
+        self.master.after(0, lambda: self.progress_bar.config(value=progress))
+        self.master.after(0, lambda: self.status_label.config(text=f"Translating... {progress:.1f}% complete"))
 
-def start_translation():
-    process_translation()
+    def cancel_translation(self):
+        self.translation_cancelled = True
+        self.status_label.config(text="Cancelling translation...")
 
-def update_progress(current, total):
-    progress_bar['value'] = (current / total) * 100
-    root.update_idletasks()
+    def reset_ui(self):
+        self.translate_button.config(state=tk.NORMAL)
+        self.cancel_button.config(state=tk.DISABLED)
 
-def cancel_translation():
-    global translation_cancelled
-    translation_cancelled = True
+    def save_settings(self, src_lang, tgt_lang, token):
+        settings = {
+            'src_lang': src_lang,
+            'tgt_lang': tgt_lang,
+            'token': token
+        }
+        with open('settings.json', 'w') as f:
+            json.dump(settings, f)
 
-def toggle_token_visibility():
-    if token_entry.cget('show') == '*':
-        token_entry.config(show='')
-        show_hide_button.config(text='Hide')
-    else:
-        token_entry.config(show='*')
-        show_hide_button.config(text='Show')
+    def load_settings(self):
+        try:
+            with open('settings.json', 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {}
+
+    def validate_token(self, token):
+        return bool(token.strip())
+
+    def get_translator(self, src_lang, tgt_lang):
+        try:
+            model_name = "facebook/nllb-200-3.3B"
+            tokenizer = AutoTokenizer.from_pretrained(model_name, src_lang=src_lang)
+
+            model = AutoModelForSeq2SeqLM.from_pretrained(
+                model_name,
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                device_map="auto",
+                low_cpu_mem_usage=True
+            )
+
+            translator = pipeline(
+                "translation",
+                model=model,
+                tokenizer=tokenizer,
+                batch_size=8
+            )
+
+            return translator, src_lang, tgt_lang
+        except Exception as e:
+            logging.error("Error loading the model: ", exc_info=True)
+            raise
+
+    def translate_texts(self, texts, translator, src_lang, tgt_lang):
+        try:
+            logging.info(f"Translating batch of size {len(texts)}")
+            translated = translator(texts, src_lang=src_lang, tgt_lang=tgt_lang, max_length=200)
+            return [t['translation_text'] for t in translated]
+        except Exception as e:
+            logging.error("Error in translation: ", exc_info=True)
+            raise
+
+    def chunks(self, lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i:i + n]
+
+    def translate_srt(self, input_file, src_lang, tgt_lang, progress_callback):
+        translator, src_lang, tgt_lang = self.get_translator(src_lang, tgt_lang)
+
+        try:
+            with open(input_file, 'r', encoding='utf-8') as f:
+                subs = list(srt.parse(f.read()))
+
+            total_subs = len(subs)
+            batch_size = 16
+            translated_subs = []
+
+            for i, batch in enumerate(self.chunks(subs, batch_size)):
+                if self.translation_cancelled:
+                    logging.info("Translation cancelled")
+                    return None
+                texts = [sub.content for sub in batch]
+                translated_texts = self.translate_texts(texts, translator, src_lang, tgt_lang)
+                for sub, translated_text in zip(batch, translated_texts):
+                    sub.content = translated_text
+                    translated_subs.append(sub)
+                progress_callback(min((i + 1) * batch_size, total_subs), total_subs)
+                logging.info(f"Processed batch {i + 1}/{(total_subs + batch_size - 1) // batch_size}")
+
+            output_file = os.path.join(os.path.expanduser('~'), 'Downloads',
+                                       f"translated_{os.path.basename(input_file)}")
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(srt.compose(translated_subs))
+            return output_file
+        except Exception as e:
+            logging.error("Error processing SRT file: ", exc_info=True)
+            raise
+
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("SRT AI Translator")
-    root.geometry("500x450")
-    root.configure(bg="#f0f0f0")
-
-    style = ttk.Style()
-    style.configure('TButton',
-                    font=('Arial', 10),
-                    padding=6,
-                    relief='flat',
-                    background="#ffffff",
-                    foreground="#000000")
-    style.configure('TLabel',
-                    font=('Arial', 10),
-                    background="#f0f0f0")
-    style.configure('TProgressbar', thickness=20)
-    style.map('TButton',
-              background=[('active', '#f0f0f0')],
-              foreground=[('active', '#000000')])
-
-    root.grid_rowconfigure(0, weight=0)
-    root.grid_rowconfigure(1, weight=0)
-    root.grid_rowconfigure(2, weight=0)
-    root.grid_rowconfigure(3, weight=0)
-    root.grid_rowconfigure(4, weight=0)
-    root.grid_rowconfigure(5, weight=0)
-    root.grid_rowconfigure(6, weight=0)
-    root.grid_rowconfigure(7, weight=1)
-    root.grid_columnconfigure(0, weight=0)
-    root.grid_columnconfigure(1, weight=1)
-    root.grid_columnconfigure(2, weight=0)
-
-    upload_button = ttk.Button(root, text="Upload SRT File", command=upload_file)
-    upload_button.grid(row=0, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
-
-    file_label = ttk.Label(root, text="No file selected")
-    file_label.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
-
-    src_language_label = ttk.Label(root, text="Source Language (e.g.,eng_Latn):")
-    src_language_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
-
-    src_language_entry = ttk.Entry(root)
-    src_language_entry.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
-
-    tgt_language_label = ttk.Label(root, text="Target Language (e.g.,por_Latn):")
-    tgt_language_label.grid(row=3, column=0, padx=10, pady=10, sticky="w")
-
-    tgt_language_entry = ttk.Entry(root)
-    tgt_language_entry.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
-
-    token_label = ttk.Label(root, text="Hugging Face Token:")
-    token_label.grid(row=4, column=0, padx=10, pady=10, sticky="w")
-
-    token_entry = ttk.Entry(root, show="*")
-    token_entry.grid(row=4, column=1, padx=10, pady=10, sticky="ew")
-
-    show_hide_button = ttk.Button(root, text="Show", command=toggle_token_visibility)
-    show_hide_button.grid(row=4, column=2, padx=10, pady=10)
-
-    translate_button = ttk.Button(root, text="Translate", command=start_translation)
-    translate_button.grid(row=5, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
-
-    cancel_button = ttk.Button(root, text="Cancel", command=cancel_translation)
-    cancel_button.grid(row=6, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
-
-    progress_bar = ttk.Progressbar(root, mode='determinate')
-    progress_bar.grid(row=7, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
-
+    app = SRTTranslatorApp(root)
     root.mainloop()
