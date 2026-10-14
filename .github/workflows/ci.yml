@@ -44,7 +44,8 @@ jobs:
           $p = Start-Process dist\SRTAI_Translator.exe -ArgumentList "selftest","--out","selftest.txt" -Wait -PassThru
           Get-Content selftest.txt
           if ($p.ExitCode -ne 0) { exit 1 }
-          "{0:N1} MB" -f ((Get-Item dist\SRTAI_Translator.exe).Length / 1MB)
+          $size = "{0:N1} MB" -f ((Get-Item dist\SRTAI_Translator.exe).Length / 1MB)
+          Write-Output "::notice title=SRTAI_Translator.exe::Self-test passed, size $size"
       - name: Open the app and take a screenshot
         shell: pwsh
         run: |
