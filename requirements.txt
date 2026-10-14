@@ -1,0 +1,9 @@
+customtkinter>=5.2
+tkinterdnd2>=0.4
+requests>=2.31
+srt>=3.5
+charset-normalizer>=3.3
+keyring>=24
+py3langid>=0.3
+ctranslate2>=4.4
+sentencepiece>=0.2

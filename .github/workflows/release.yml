@@ -1,0 +1,45 @@
+name: Release
+
+# Push a tag like v2.0.0 to build the Windows .exe and publish a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Run tests
+        run: python -m pytest -q
+      - name: Build the .exe
+        run: python packaging/build.py
+      - name: Self-test the .exe
+        shell: pwsh
+        run: |
+          $env:SRTAI_HOME = "$PWD\selftest-home"
+          $p = Start-Process dist\SRTAI_Translator.exe -ArgumentList "selftest","--out","selftest.txt" -Wait -PassThru
+          Get-Content selftest.txt
+          if ($p.ExitCode -ne 0) { exit 1 }
+      - name: Checksum and release notes
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash dist\SRTAI_Translator.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  SRTAI_Translator.exe" | Set-Content dist\SRTAI_Translator.exe.sha256
+          python packaging/release_notes.py "${{ github.ref_name }}" > release_notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: SRT AI Translator ${{ github.ref_name }}
+          body_path: release_notes.md
+          files: |
+            dist/SRTAI_Translator.exe
+            dist/SRTAI_Translator.exe.sha256

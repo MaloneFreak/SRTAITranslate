@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+SRTAI_data/
+settings.json
+srt_translator.log
+*.srt.tmp
