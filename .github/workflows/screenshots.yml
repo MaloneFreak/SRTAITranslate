@@ -1,8 +1,12 @@
 name: Screenshots
 
-# Run manually (Actions tab -> Screenshots -> Run workflow) to refresh the README images in docs/.
+# Refreshes the README images in docs/. Run it from the Actions tab (Screenshots -> Run workflow);
+# it also runs on release branches when the screenshot script changes.
 on:
   workflow_dispatch:
+  push:
+    branches: ["v2*"]
+    paths: ["packaging/screenshot.py", ".github/workflows/screenshots.yml"]
 
 permissions:
   contents: write
