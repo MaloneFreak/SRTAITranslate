@@ -4,7 +4,7 @@
 
 # SRT AI Translator 2.0
 
-Translate `.srt` subtitles into 80+ languages with the engine you prefer: a cloud AI API, an AI model running on your own PC, or a built-in offline model. One small `.exe`, no installation, models downloaded only when you need them.
+Translate `.srt` subtitles into 80+ languages with the engine you prefer: a cloud AI API, an AI model running on your own PC, or a built-in offline model. One `.exe` of about 50 MB, no installation, models downloaded only when you need them.
 
 > **Em português:** veja o [guia rápido em português](#guia-rápido-em-português) no final.
 
@@ -45,7 +45,7 @@ Get `SRTAI_Translator.exe` from the [latest release](https://github.com/MaloneFr
 | OpenAI / Claude / DeepSeek / Mistral | Paid per use | Yes | Excellent | If you already have a key |
 | DeepL | Free plan: 500,000 characters/month | Yes | Very good | Fast, consistent translations of European languages |
 | Ollama + TranslateGemma 4B | Free | Only to download (3.3 GB) | Very good | Privacy, no limits, a reasonably recent PC |
-| Offline NLLB 600M / 1.3B / 3.3B | Free | Only to download (0.6 / 1.3 / 3.3 GB) | Good | No extra software, works on any PC |
+| Offline NLLB 600M / 1.3B / 3.3B | Free | Only to download (0.6 / 1.4 / 3.4 GB) | Good | No extra software, works on any PC |
 
 A 45-minute episode has about 600 subtitles (roughly 25,000 characters), so a cloud API usually costs a few cents or less, and fits easily in free tiers.
 

@@ -5,9 +5,9 @@
 A rewrite focused on a light download, more ways to translate and better subtitle quality.
 
 ### Lighter and simpler
-- The Windows `.exe` no longer bundles PyTorch: it is a single file of a few dozen MB instead of two ~1.2 GB split archives.
+- The Windows `.exe` no longer bundles PyTorch: it is a single file of about 50 MB instead of two ~1.2 GB split archives.
 - Models are downloaded **on demand**, inside the app, with progress and resume.
-- The offline NLLB models now run on CTranslate2 with int8 quantization: the 3.3B model used in v1.x drops from ~17 GB to ~3.3 GB and runs much faster, and smaller 600M (0.6 GB) and 1.3B (1.3 GB) options were added. CPU works out of the box; NVIDIA GPUs are used when available.
+- The offline NLLB models now run on CTranslate2 with int8 quantization: the 3.3B model used in v1.x drops from ~17 GB to ~3.4 GB and runs much faster, and smaller 600M (0.6 GB) and 1.3B (1.4 GB) options were added. CPU works out of the box; NVIDIA GPUs are used when available.
 - The model stays loaded between files instead of being reloaded for every translation.
 - No Hugging Face token needed anymore.
 

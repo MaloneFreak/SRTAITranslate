@@ -18,7 +18,7 @@ class OfflineModel:
     id: str
     name: str
     repos: tuple[str, ...]
-    size_mb: int
+    size_mb: int      # download size in MB (1 MB = 1,000,000 bytes)
     ram_gb: float
     quality: int      # 1..3
     speed: int        # 1..3
@@ -29,7 +29,7 @@ class OfflineModel:
 
     @property
     def size_label(self) -> str:
-        return f"{self.size_mb / 1024:.1f} GB" if self.size_mb >= 1024 else f"{self.size_mb} MB"
+        return f"{self.size_mb / 1000:.1f} GB" if self.size_mb >= 1000 else f"{self.size_mb} MB"
 
 
 OFFLINE_MODELS: list[OfflineModel] = [
@@ -41,7 +41,7 @@ OFFLINE_MODELS: list[OfflineModel] = [
             "mijuanlo/nllb-200-distilled-600M-ct2-int8",
             "luigi000/nllb-200-distilled-600M-ct2-int8",
         ),
-        size_mb=620,
+        size_mb=625,
         ram_gb=1.5,
         quality=1,
         speed=3,
@@ -55,7 +55,7 @@ OFFLINE_MODELS: list[OfflineModel] = [
             "OpenNMT/nllb-200-distilled-1.3B-ct2-int8",
             "mijuanlo/nllb-200-distilled-1.3B-int8-ct2",
         ),
-        size_mb=1320,
+        size_mb=1380,
         ram_gb=3,
         quality=2,
         speed=2,
@@ -69,7 +69,7 @@ OFFLINE_MODELS: list[OfflineModel] = [
             "OpenNMT/nllb-200-3.3B-ct2-int8",
             "mijuanlo/nllb-200-3.3B-ct2-int8",
         ),
-        size_mb=3210,
+        size_mb=3360,
         ram_gb=6,
         quality=3,
         speed=1,

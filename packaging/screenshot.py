@@ -90,7 +90,7 @@ def main() -> int:
     s.appearance = "dark"
     s.ui_language = os.environ.get("SRTAI_SHOT_LANG", "en")
     s.job.use_cache = False
-    s.geometry = "1000x720+0+0"  # GitHub's Windows runners have a 1024x768 screen
+    s.geometry = "1000x680+0+0"  # GitHub's Windows runners have a 1024x768 screen with a taskbar
     s.save()
     set_api_key("gemini", "demo-key-not-real-0000")
 
