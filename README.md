@@ -112,7 +112,7 @@ python -m pytest           # tests
 python packaging/build.py  # builds dist/SRTAI_Translator.exe
 ```
 
-Pushing a tag like `v2.0.0` makes GitHub Actions test the code, build the `.exe`, run its self-test and publish a release.
+Releases: create a release on GitHub with a new tag such as `v2.1.0` (your title and notes are kept), or just push the tag. GitHub Actions then tests the code, builds the `.exe`, runs its self-test and attaches `SRTAI_Translator.exe` and its `.sha256` to the release. Notes for tag-only releases come from `docs/release-notes/<version>.md` or the CHANGELOG.
 
 ### Project layout
 
