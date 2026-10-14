@@ -1,7 +1,8 @@
 name: Screenshots
 
-# Refreshes the README images in docs/. Run it from the Actions tab (Screenshots -> Run workflow);
-# it also runs on release branches when the screenshot script changes.
+# Takes fresh README images (docs/*.png) on Windows. Run it from the Actions tab
+# (Screenshots -> Run workflow); it also runs on release branches when the script changes.
+# The images are uploaded as an artifact and pushed to a "screenshots/run-<id>" branch.
 on:
   workflow_dispatch:
   push:
@@ -28,19 +29,24 @@ jobs:
           set -o pipefail
           python packaging/screenshot.py docs 2>&1 | tee shot.log
           ls -la docs
-      - name: Commit
+      - uses: actions/upload-artifact@v6
+        with:
+          name: screenshots
+          path: docs/*.png
+      - name: Push the images to a side branch (open a PR from it to update the README images)
+        continue-on-error: true
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "screenshots/run-${{ github.run_id }}"
           git add docs/*.png
-          git diff --cached --quiet || git commit -m "Update screenshots"
-          git push 2>&1 | tee push.log
+          git commit -m "Update screenshots"
+          git push origin "HEAD:refs/heads/screenshots/run-${{ github.run_id }}" 2>&1 | tee push.log
+          exit ${PIPESTATUS[0]}
       - name: Report problems
         if: failure()
         shell: bash
         run: |
-          for f in shot.log push.log; do
-            [ -f "$f" ] && tail -n 15 "$f" | while IFS= read -r line; do echo "::warning title=$f::$line"; done
-          done
-          ls docs 2>&1 | while IFS= read -r line; do echo "::warning title=docs::$line"; done
+          [ -f shot.log ] && tail -n 15 shot.log | while IFS= read -r line; do echo "::warning title=shot.log::$line"; done
+          true
