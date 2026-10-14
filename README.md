@@ -4,11 +4,19 @@
 
 # SRT AI Translator 2.0
 
-Translate `.srt` subtitles into 80+ languages with the engine you prefer: a cloud AI API, an AI model running on your own PC, or a built-in offline model. One `.exe` of about 50 MB, no installation, models downloaded only when you need them.
+Translate `.srt` subtitles into 80+ languages and regional variants with the engine you prefer: a cloud AI API, an AI model running on your own PC, or a built-in offline model. One `.exe` of about 50 MB, no installation, models downloaded only when you need them.
 
 > **Em português:** veja o [guia rápido em português](#guia-rápido-em-português) no final.
 
-![SRT AI Translator](docs/screenshot.png)
+![SRT AI Translator translating a subtitle file](docs/screenshot.png)
+
+<details>
+<summary>More screenshots</summary>
+
+![Models: offline models and Ollama](docs/screenshot-models.png)
+![Settings](docs/screenshot-settings.png)
+
+</details>
 
 ## Features
 

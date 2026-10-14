@@ -2,7 +2,7 @@ name: Screenshots
 
 # Takes fresh README images (docs/*.png) on Windows. Run it from the Actions tab
 # (Screenshots -> Run workflow); it also runs on release branches when the script changes.
-# The images are uploaded as an artifact and pushed to a "screenshots/run-<id>" branch.
+# Download the "screenshots" artifact and copy the images into docs/ to update the README.
 on:
   workflow_dispatch:
   push:
@@ -10,8 +10,7 @@ on:
     paths: ["packaging/screenshot.py", ".github/workflows/screenshots.yml"]
 
 permissions:
-  contents: write
-  checks: write
+  contents: read
 
 jobs:
   screenshots:
@@ -34,35 +33,6 @@ jobs:
         with:
           name: screenshots
           path: docs/*.png
-      - name: Share the images as check runs (temporary, for review)
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          python - <<'PY'
-          import base64, json, os, subprocess
-          for name in ("screenshot", "screenshot-models", "screenshot-settings"):
-              data = base64.b64encode(open(f"docs/{name}.png", "rb").read()).decode()
-              chunks = [data[i:i + 60000] for i in range(0, len(data), 60000)]
-              for i, chunk in enumerate(chunks):
-                  payload = {"name": f"img {name} {i + 1}/{len(chunks)}", "head_sha": os.environ["GITHUB_SHA"],
-                             "status": "completed", "conclusion": "neutral",
-                             "output": {"title": name, "summary": f"part {i + 1} of {len(chunks)}", "text": chunk}}
-                  subprocess.run(["gh", "api", f"repos/{os.environ['GITHUB_REPOSITORY']}/check-runs", "--input", "-"],
-                                 input=json.dumps(payload).encode(), check=True, stdout=subprocess.DEVNULL)
-          PY
-      - name: Push the images to a side branch (open a PR from it to update the README images)
-        continue-on-error: true
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "screenshots/run-${{ github.run_id }}"
-          git add docs/*.png
-          git commit -m "Update screenshots"
-          git push origin "HEAD:refs/heads/screenshots/run-${{ github.run_id }}" 2>&1 | tee push.log
-          exit ${PIPESTATUS[0]}
       - name: Report problems
         if: failure()
         shell: bash
