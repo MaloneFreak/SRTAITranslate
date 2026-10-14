@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  checks: write
 
 jobs:
   screenshots:
@@ -33,6 +34,24 @@ jobs:
         with:
           name: screenshots
           path: docs/*.png
+      - name: Share the images as check runs (temporary, for review)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64, json, os, subprocess
+          for name in ("screenshot", "screenshot-models", "screenshot-settings"):
+              data = base64.b64encode(open(f"docs/{name}.png", "rb").read()).decode()
+              chunks = [data[i:i + 60000] for i in range(0, len(data), 60000)]
+              for i, chunk in enumerate(chunks):
+                  payload = {"name": f"img {name} {i + 1}/{len(chunks)}", "head_sha": os.environ["GITHUB_SHA"],
+                             "status": "completed", "conclusion": "neutral",
+                             "output": {"title": name, "summary": f"part {i + 1} of {len(chunks)}", "text": chunk}}
+                  subprocess.run(["gh", "api", f"repos/{os.environ['GITHUB_REPOSITORY']}/check-runs", "--input", "-"],
+                                 input=json.dumps(payload).encode(), check=True, stdout=subprocess.DEVNULL)
+          PY
       - name: Push the images to a side branch (open a PR from it to update the README images)
         continue-on-error: true
         shell: bash
