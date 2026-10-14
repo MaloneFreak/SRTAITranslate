@@ -1,0 +1,63 @@
+import os
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+SAMPLE_SRT = """1
+00:00:01,000 --> 00:00:03,000
+{\\an8}<i>Previously on the show...</i>
+
+2
+00:00:03,500 --> 00:00:05,000
+- Where are you going?
+- To the store.
+
+3
+00:00:05,200 --> 00:00:07,000
+I think that we should
+
+4
+00:00:07,100 --> 00:00:09,000
+go home before it starts raining.
+
+5
+00:00:10,000 --> 00:00:12,000
+♪ Never gonna stop ♪
+
+6
+00:00:12,500 --> 00:00:13,000
+♪♪
+
+7
+00:00:14,000 --> 00:00:16,000
+Thank you.
+
+8
+00:00:16,500 --> 00:00:18,000
+Thank you.
+
+9
+00:00:18,500 --> 00:00:21,000
+[DOOR SLAMS]
+JOHN: I said <i>no</i>!
+"""
+
+
+@pytest.fixture(autouse=True)
+def isolated_home(tmp_path, monkeypatch):
+    monkeypatch.setenv("SRTAI_HOME", str(tmp_path / "home"))
+    yield
+
+
+@pytest.fixture
+def sample_srt(tmp_path):
+    path = tmp_path / "Movie.en.srt"
+    path.write_text(SAMPLE_SRT, encoding="utf-8")
+    return path
+
+
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")

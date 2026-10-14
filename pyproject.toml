@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "srtai-translator"
+dynamic = ["version"]
+description = "Translate SRT subtitles with cloud AI APIs, local LLMs (Ollama, LM Studio) or offline NLLB models."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Pedro Giácomo (MaloneFreak)" }]
+keywords = ["subtitles", "srt", "translation", "ai", "llm", "nllb", "ollama"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Topic :: Multimedia :: Video",
+]
+dependencies = [
+    "customtkinter>=5.2",
+    "tkinterdnd2>=0.4",
+    "requests>=2.31",
+    "srt>=3.5",
+    "charset-normalizer>=3.3",
+    "keyring>=24",
+    "py3langid>=0.3",
+    "ctranslate2>=4.4",
+    "sentencepiece>=0.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pyinstaller>=6.10", "pillow>=10"]
+
+[project.urls]
+Homepage = "https://github.com/MaloneFreak/SRTAITranslate"
+Issues = "https://github.com/MaloneFreak/SRTAITranslate/issues"
+
+[project.scripts]
+srtai = "srtai.cli:main"
+
+[project.gui-scripts]
+srtai-gui = "srtai.gui.app:run"
+
+[tool.setuptools.dynamic]
+version = { attr = "srtai.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["srtai*"]
+
+[tool.setuptools.package-data]
+srtai = ["assets/*.png", "assets/*.ico", "assets/fonts/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "tests"]

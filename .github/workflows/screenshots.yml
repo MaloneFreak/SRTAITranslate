@@ -1,0 +1,41 @@
+name: Screenshots
+
+# Takes fresh README images (docs/*.png) on Windows. Run it from the Actions tab
+# (Screenshots -> Run workflow); it also runs on release branches when the script changes.
+# Download the "screenshots" artifact and copy the images into docs/ to update the README.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["v2*"]
+    paths: ["packaging/screenshot.py", ".github/workflows/screenshots.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Take screenshots
+        shell: bash
+        run: |
+          set -o pipefail
+          python packaging/screenshot.py docs 2>&1 | tee shot.log
+          ls -la docs
+      - uses: actions/upload-artifact@v6
+        with:
+          name: screenshots
+          path: docs/*.png
+      - name: Report problems
+        if: failure()
+        shell: bash
+        run: |
+          [ -f shot.log ] && tail -n 15 shot.log | while IFS= read -r line; do echo "::warning title=shot.log::$line"; done
+          true
