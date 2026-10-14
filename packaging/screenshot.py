@@ -90,7 +90,7 @@ def main() -> int:
     s.appearance = "dark"
     s.ui_language = os.environ.get("SRTAI_SHOT_LANG", "en")
     s.job.use_cache = False
-    s.geometry = "1180x800+30+30"
+    s.geometry = "1000x720+0+0"  # GitHub's Windows runners have a 1024x768 screen
     s.save()
     set_api_key("gemini", "demo-key-not-real-0000")
 
@@ -100,12 +100,19 @@ def main() -> int:
 
     app = App([str(p) for p in write_sample(work)])
 
+    errors: list[str] = []
+
     def shot(name: str) -> None:
-        app.update()
-        x, y = app.winfo_rootx(), app.winfo_rooty()
-        w, h = app.winfo_width(), app.winfo_height()
-        ImageGrab.grab(bbox=(x, y, x + w, y + h), all_screens=True).save(out_dir / f"{name}.png")
-        print("saved", out_dir / f"{name}.png")
+        try:
+            app.update()
+            x, y = app.winfo_rootx(), app.winfo_rooty()
+            w, h = app.winfo_width(), app.winfo_height()
+            ImageGrab.grab(bbox=(x, y, x + w, y + h), all_screens=sys.platform == "win32").save(
+                out_dir / f"{name}.png")
+            print("saved", out_dir / f"{name}.png", (x, y, w, h), flush=True)
+        except Exception as exc:  # report and keep going
+            errors.append(f"{name}: {exc!r}")
+            print("FAILED", name, repr(exc), flush=True)
 
     def go_to(page: str) -> None:
         label = app._nav_labels[page]
@@ -121,7 +128,7 @@ def main() -> int:
     app.after(13500, app.destroy)
     app.mainloop()
     httpd.shutdown()
-    return 0
+    return 1 if errors or not (out_dir / "screenshot.png").exists() else 0
 
 
 if __name__ == "__main__":
